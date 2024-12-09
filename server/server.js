@@ -2,8 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const carRoutes = require('./routes/car.routes');
-const repairRoutes = require('./routes/repair.routes');
+const carRoutes = require('./src/routes/car.routes');
+const repairRoutes = require('./src/routes/repair.routes');
 
 dotenv.config();
 const app = express();
@@ -35,3 +35,5 @@ async function startServer() {
 }
 
 startServer();
+
+module.exports = app; // Export the app instance
