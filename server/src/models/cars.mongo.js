@@ -71,8 +71,14 @@ const carSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     },
-    repairDetails: [repairDetailSchema], // Subdocument array
-    agreedRepairDetails: [repairDetailSchema], // Subdocument array
+    repairDetails: {
+        type: [repairDetailSchema],
+        required: false
+    },
+    agreedRepairDetails: {
+        type: [repairDetailSchema],
+        required: false
+    },
     totalCost: {
         type: Number,
         required: false
@@ -84,7 +90,11 @@ const carSchema = new mongoose.Schema({
 });
 
 carSchema.pre('save', function (next) {
-    this.totalCost = this.agreedRepairDetails.reduce((sum, repair) => sum + repair.cost, 0);
+    if (this.agreedRepairDetails && this.agreedRepairDetails.length > 0) {
+        this.totalCost = this.agreedRepairDetails.reduce((sum, repair) => sum + repair.cost, 0);
+    } else {
+        this.totalCost = 0;
+    }
     next();
 });
 
