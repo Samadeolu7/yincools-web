@@ -1,6 +1,4 @@
 const cars = require('./cars.mongo');
-// add validators to the schema
-// risk of sql injection
 
 // Get all cars
 async function getAllCars() {

@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const carRoutes = require('./routes/car.routes');
+const repairRoutes = require('./routes/repair.routes');
 
 dotenv.config();
 const app = express();
@@ -11,6 +13,9 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use('/car', carRoutes);
+app.use('/repair', repairRoutes);
+
 app.get('/', (req, res) => {
     res.send('Welcome to the Estimates App API!');
 });
