@@ -1,4 +1,3 @@
-
 const { getAllCars, getCarById, createCar, updateCar, deleteCar } = require('../models/cars.model');
 
 async function handleGetAllCars(req, res) {
