@@ -25,6 +25,7 @@ async function handleAddRepairDetails(req, res) {
     }
 }
 
+
 async function handleGenerateEstimatePDF(req, res) {
     const { carId } = req.params;
 
@@ -38,46 +39,118 @@ async function handleGenerateEstimatePDF(req, res) {
             return res.status(404).json({ error: 'Car not found' });
         }
 
-        // Create a new PDF document
-        const doc = new PDFDocument();
+        const doc = new PDFDocument({ margin: 50 });
 
-        // Path to save the PDF
         const fileName = `invoice_${Date.now()}.pdf`;
         const filePath = path.join(__dirname, '../pdfs', fileName);
 
-        // Stream the PDF to the file
         const stream = fs.createWriteStream(filePath);
         doc.pipe(stream);
 
-        // Letterhead
+        // Add Letterhead
         doc
-            .image('path/to/letterhead.png', 50, 20, { width: 500 }) // Adjust path to your letterhead image
+            .image(path.join(__dirname, '../../public/images/letterhead.jpg'), 50, 20, { width: 500 }) // Adjust path to your letterhead image
+            .moveDown(7);
+
+        // Add Title
+        doc
+            .fontSize(20)
+            .font('Helvetica-Bold')
+            .text('Repair Estimate', { align: 'center' })
             .moveDown();
 
-        // Add Car Details
-        doc.fontSize(14).text('Car Details', { underline: true }).moveDown();
-        Object.entries(car.toObject()).forEach(([key, value]) => {
-            if (key !== 'repairDetails' && key !== 'agreedRepairDetails') {
-                doc.text(`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`);
-            }
+        // Add Car Details Table
+        doc
+            .fontSize(14)
+            .font('Helvetica-Bold')
+            .text('Car Details', { underline: true })
+            .moveDown();
+
+        const excludedKeys = ['createdAt', 'totalCost', '_id', '__v', 'status', 'currentMileage', 'incomingMileage','repairDetails','agreedRepairDetails'];
+        const carDetails = Object.entries(car.toObject()).filter(
+            ([key]) => !excludedKeys.includes(key)
+        );
+
+        const carTableStartY = doc.y;
+        const cellPadding = 5;
+
+        carDetails.forEach(([key, value], index) => {
+            const rowY = carTableStartY + index * 20;
+            const bgColor = index % 2 === 0 ? '#f2f2f2' : '#ffffff';
+
+            // Draw row background
+            doc.rect(50, rowY, 500, 20).fill(bgColor).stroke();
+
+            // Field name
+            doc
+                .fillColor('#000')
+                .font('Helvetica-Bold')
+                .fontSize(12)
+                .text(key.charAt(0).toUpperCase() + key.slice(1), 55, rowY + cellPadding);
+
+            // Field value
+            doc
+                .font('Helvetica')
+                .fontSize(12)
+                .text(value, 300, rowY + cellPadding);
         });
-        doc.moveDown();
+
+        doc.moveDown(carDetails.length * 0.4);
 
         // Add Repairs Table
-        doc.fontSize(14).text('Repair Details', { underline: true }).moveDown();
-        const tableStartY = doc.y;
-        doc.text('Component', 50, tableStartY);
-        doc.text('Cost', 300, tableStartY);
-        doc.text('Notes', 400, tableStartY);
-        doc.moveDown();
+        doc
+            .fontSize(14)
+            .font('Helvetica-Bold')
+            .text('Repair Details', { underline: true })
+            .moveDown();
 
-        car.repairDetails.forEach((repair) => {
-            const rowY = doc.y;
-            doc.text(repair.component, 50, rowY);
-            doc.text(`$${repair.cost.toFixed(2)}`, 300, rowY);
-            doc.text(repair.notes || 'N/A', 400, rowY);
-            doc.moveDown();
+        const repairTableStartY = doc.y;
+
+        // Table header
+        const headerRowHeight = 20;
+        const headerBgColor = '#cce5ff';
+
+        doc
+            .rect(50, repairTableStartY, 500, headerRowHeight)
+            .fill(headerBgColor)
+            .stroke();
+
+        doc
+            .font('Helvetica-Bold')
+            .fillColor('#000')
+            .fontSize(12)
+            .text('Component', 55, repairTableStartY + cellPadding)
+            .text('Cost', 300, repairTableStartY + cellPadding, { align: 'right' })
+            .text('Notes', 400, repairTableStartY + cellPadding);
+
+        let currentY = repairTableStartY + headerRowHeight;
+
+        car.repairDetails.forEach((repair, index) => {
+            const bgColor = index % 2 === 0 ? '#f9f9f9' : '#ffffff';
+
+            // Draw row background
+            doc.rect(50, currentY, 500, 20).fill(bgColor).stroke();
+
+            // Table cells
+            doc
+                .fillColor('#000')
+                .font('Helvetica')
+                .fontSize(12)
+                .text(repair.component, 55, currentY + cellPadding)
+                .text(`$${repair.cost.toFixed(2)}`, 300, currentY + cellPadding, { align: 'right' })
+                .text(repair.notes || 'N/A', 400, currentY + cellPadding);
+
+            currentY += 20;
         });
+
+        // Add Summary
+        const totalCost = car.repairDetails.reduce((sum, repair) => sum + repair.cost, 0);
+        doc
+            .font('Helvetica-Bold')
+            .fontSize(14)
+            .moveDown()
+            .text(`Total Cost: $${totalCost.toFixed(2)}`, { align: 'right' })
+            .moveDown();
 
         // Finalize the document
         doc.end();
@@ -86,7 +159,13 @@ async function handleGenerateEstimatePDF(req, res) {
         stream.on('finish', () => {
             res.json({ fileUrl: `/pdfs/${fileName}` });
         });
+
+        stream.on('error', (err) => {
+            console.error('Stream error:', err);
+            res.status(500).json({ error: 'Failed to generate PDF' });
+        });
     } catch (error) {
+        console.error('Error generating PDF:', error);
         res.status(500).json({ error: error.message });
     }
 }
