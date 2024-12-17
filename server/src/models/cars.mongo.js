@@ -3,11 +3,11 @@ const mongoose = require('mongoose');
 // Subdocument for repair details
 const repairDetailSchema = new mongoose.Schema({
     component: {
-        type: String,
+        type: [String],
         required: true
     },
     cost: {
-        type: Number,
+        type: [Number],
         required: true
     },
     status: {
