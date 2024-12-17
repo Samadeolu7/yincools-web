@@ -25,8 +25,30 @@ async function handleAddRepairDetails(req, res) {
     }
 }
 
+async function handleAddAgreedRepairDetails(req, res) {
+    const { carId, repairDetails } = req.body;
 
+    if (!carId || !repairDetails) {
+        return res.status(400).json({ error: 'Car ID and repair details are required' });
+    }
+
+    try {
+        const car = await getCarById(carId);
+        if (!car) {
+            return res.status(404).json({ error: 'Car not found' });
+        }
+
+        car.agreedRepairDetails.push(...repairDetails);
+        await updateCar(carId, car);
+
+        res.status(200).json({ message: 'Agreed repair details added successfully', car });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 async function handleGenerateEstimatePDF(req, res) {
+    console.log('Generating PDF...');
+    console.log('req.params:', req.params);
     const { carId } = req.params;
 
     if (!carId) {
@@ -41,15 +63,14 @@ async function handleGenerateEstimatePDF(req, res) {
 
         const doc = new PDFDocument({ margin: 50 });
 
-        const fileName = `invoice_${Date.now()}.pdf`;
-        const filePath = path.join(__dirname, '../pdfs', fileName);
+        res.setHeader('Content-Disposition', `attachment; filename=invoice_${Date.now()}.pdf`);
+        res.setHeader('Content-Type', 'application/pdf');
 
-        const stream = fs.createWriteStream(filePath);
-        doc.pipe(stream);
+        doc.pipe(res);
 
         // Add Letterhead
         doc
-            .image(path.join(__dirname, '../../public/images/letterhead.jpg'), 50, 20, { width: 500 }) // Adjust path to your letterhead image
+            .image(path.join(__dirname, '../../public/images/letterhead.jpg'), 50, 20, { width: 500 })
             .moveDown(7);
 
         // Add Title
@@ -66,7 +87,7 @@ async function handleGenerateEstimatePDF(req, res) {
             .text('Car Details', { underline: true })
             .moveDown();
 
-        const excludedKeys = ['createdAt', 'totalCost', '_id', '__v', 'status', 'currentMileage', 'incomingMileage','repairDetails','agreedRepairDetails'];
+        const excludedKeys = ['createdAt', 'totalCost', '_id', '__v', 'status', 'currentMileage', 'incomingMileage', 'repairDetails', 'agreedRepairDetails'];
         const carDetails = Object.entries(car.toObject()).filter(
             ([key]) => !excludedKeys.includes(key)
         );
@@ -121,7 +142,6 @@ async function handleGenerateEstimatePDF(req, res) {
             .fontSize(12)
             .text('Component', 55, repairTableStartY + cellPadding)
             .text('Cost', 300, repairTableStartY + cellPadding, { align: 'right' })
-            .text('Notes', 400, repairTableStartY + cellPadding);
 
         let currentY = repairTableStartY + headerRowHeight;
 
@@ -136,15 +156,14 @@ async function handleGenerateEstimatePDF(req, res) {
                 .fillColor('#000')
                 .font('Helvetica')
                 .fontSize(12)
-                .text(repair.component, 55, currentY + cellPadding)
-                .text(`$${repair.cost.toFixed(2)}`, 300, currentY + cellPadding, { align: 'right' })
-                .text(repair.notes || 'N/A', 400, currentY + cellPadding);
+                .text(repair.component.join(', '), 55, currentY + cellPadding)
+                .text(`$${repair.cost.reduce((sum, cost) => sum + cost, 0).toFixed(2)}`, 300, currentY + cellPadding, { align: 'right' })
 
             currentY += 20;
         });
 
         // Add Summary
-        const totalCost = car.repairDetails.reduce((sum, repair) => sum + repair.cost, 0);
+        const totalCost = car.repairDetails.reduce((sum, repair) => sum + repair.cost.reduce((sum, cost) => sum + cost, 0), 0);
         doc
             .font('Helvetica-Bold')
             .fontSize(14)
@@ -152,25 +171,70 @@ async function handleGenerateEstimatePDF(req, res) {
             .text(`Total Cost: $${totalCost.toFixed(2)}`, { align: 'right' })
             .moveDown();
 
+        // add agreed repair details if available
+        if (car.agreedRepairDetails.length > 0) {
+            doc
+                .fontSize(14)
+                .font('Helvetica-Bold')
+                .text('Agreed Repair Details', { underline: true })
+                .moveDown();
+
+            const agreedRepairTableStartY = doc.y;
+
+            // Table header
+            doc
+                .rect(50, agreedRepairTableStartY, 500, headerRowHeight)
+                .fill(headerBgColor)
+                .stroke();
+
+            doc
+                .font('Helvetica-Bold')
+                .fillColor('#000')
+                .fontSize(12)
+                .text('Component', 55, agreedRepairTableStartY + cellPadding)
+                .text('Cost', 300, agreedRepairTableStartY + cellPadding, { align: 'right' })
+
+            currentY = agreedRepairTableStartY + headerRowHeight;
+
+            car.agreedRepairDetails.forEach((repair, index) => {
+                const bgColor = index % 2 === 0 ? '#f9f9f9' : '#ffffff';
+
+                // Draw row background
+                doc.rect(50, currentY, 500, 20).fill(bgColor).stroke();
+
+                // Table cells
+                doc
+                    .fillColor('#000')
+                    .font('Helvetica')
+                    .fontSize(12)
+                    .text(repair.component.join(', '), 55, currentY + cellPadding)
+                    .text(`$${repair.cost.reduce((sum, cost) => sum + cost, 0).toFixed(2)}`, 300, currentY + cellPadding, { align: 'right' })
+
+                currentY += 20;
+            });
+
+            // Add Summary
+            const totalAgreedCost = car.agreedRepairDetails.reduce((sum, repair) => sum + repair.cost.reduce((sum, cost) => sum + cost, 0), 0);
+            doc
+                .font('Helvetica-Bold')
+                .fontSize(14)
+                .moveDown()
+                .text(`Total Agreed Cost: $${totalAgreedCost.toFixed(2)}`, { align: 'right' })
+                .moveDown();
+        }
+
         // Finalize the document
         doc.end();
-
-        // Return the file URL
-        stream.on('finish', () => {
-            res.json({ fileUrl: `/pdfs/${fileName}` });
-        });
-
-        stream.on('error', (err) => {
-            console.error('Stream error:', err);
-            res.status(500).json({ error: 'Failed to generate PDF' });
-        });
     } catch (error) {
         console.error('Error generating PDF:', error);
         res.status(500).json({ error: error.message });
     }
 }
 
+
+
 module.exports = {
     handleAddRepairDetails,
+    handleAddAgreedRepairDetails,
     handleGenerateEstimatePDF
 };

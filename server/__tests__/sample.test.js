@@ -145,8 +145,8 @@ describe('Repair API', () => {
             complaints: 'Engine noise',
             repairDetails: [
                 {
-                    component: 'Engine',
-                    cost: 500.00,
+                    component: ['Engine'],
+                    cost: [500.00],
                     status: 'completed',
                     notes: 'Replaced engine oil'
                 }
