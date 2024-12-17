@@ -3,9 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "install-server": "npm install --prefix server",
+    "install-client": "npm install --prefix client/car-repair-manager",
+    "install": "npm run install-server && npm run install-client",
+    "server": "npm run watch --prefix server",
+    "client": "npm run dev --prefix client/car-repair-manager",
+    "watch": "concurrently \"npm run server\" \"npm run client\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
 }

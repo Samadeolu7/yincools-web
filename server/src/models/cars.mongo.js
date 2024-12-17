@@ -54,7 +54,7 @@ const carSchema = new mongoose.Schema({
     },
     currentMileage: {
         type: Number,
-        required: true
+        required: false
     },
     complaints: {
         type: String,

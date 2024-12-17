@@ -3,7 +3,7 @@ const cars = require('./cars.mongo');
 // Get all cars
 async function getAllCars() {
     try {
-        return await cars.find();
+        return await cars.find({}, { __v: 0, '_id': 0 });
     } catch (error) {
         throw new Error('Error fetching cars: ' + error.message);
     }
