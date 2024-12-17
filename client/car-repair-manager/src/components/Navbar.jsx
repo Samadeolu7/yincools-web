@@ -10,7 +10,7 @@ const Navbar = () => (
             <Box sx={{ display: 'flex', gap: 2 }}>
                 <Button color="inherit" component={Link} to="/">Home</Button>
                 <Button color="inherit" component={Link} to="/add-car">Add Car</Button>
-                <Button color="inherit" component={Link} to="/generate-pdf">Generate PDF</Button>
+                <Button color="inherit" component={Link} to="/add-repair-details">Add Repair Details</Button>
                 <Button color="inherit" component={Link} to="/get-cars">Get Cars</Button>
             </Box>
         </Toolbar>

@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import AddCar from './pages/AddCar';
-import GeneratePdf from './pages/GeneratePdf';
+import AddRepairDetails from './pages/AddRepairDetails';
 import GetCars from './pages/GetCars';
 import GetCarById from './pages/GetCarById';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -45,10 +45,10 @@ function App() {
                         }
                     />
                     <Route
-                        path="/generate-pdf"
+                        path="/add-repair-details"
                         element={
                             <Layout>
-                                <GeneratePdf />
+                                <AddRepairDetails />
                             </Layout>
                         }
                     />
@@ -61,7 +61,7 @@ function App() {
                         }
                     />
                     <Route
-                        path="/get-car/:id"
+                        path="/car/:id"
                         element={
                             <Layout>
                                 <GetCarById />
