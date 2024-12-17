@@ -25,13 +25,23 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
 async function startServer() {
-    mongoose
-        .connect(MONGO_URI)
-        .then(() => {
-            console.log('Connected to MongoDB');
-            app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-        })
-        .catch((err) => console.error('MongoDB connection failed:', err));
+    try {
+        await mongoose.connect(MONGO_URI);
+        console.log('Connected to MongoDB');
+        const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+        server.on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                console.error(`Port ${PORT} is already in use. Trying another port...`);
+                const newPort = PORT + 1;
+                app.listen(newPort, () => console.log(`Server running on port ${newPort}`));
+            } else {
+                console.error('Server error:', err);
+            }
+        });
+    } catch (err) {
+        console.error('MongoDB connection failed:', err);
+    }
 }
 
 startServer();
