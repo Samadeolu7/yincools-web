@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
+import PropTypes from 'prop-types';
 
 const CarForm = ({ onSubmit, initialData = {} }) => {
     const [formData, setFormData] = useState({
@@ -50,6 +51,18 @@ const CarForm = ({ onSubmit, initialData = {} }) => {
             <Button type="submit" variant="contained" color="primary">Submit</Button>
         </Box>
     );
+};
+CarForm.propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+    initialData: PropTypes.shape({
+        driver: PropTypes.string,
+        plateNumber: PropTypes.string,
+        make: PropTypes.string,
+        model: PropTypes.string,
+        color: PropTypes.string,
+        incomingMileage: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        complaints: PropTypes.string,
+    }),
 };
 
 export default CarForm;

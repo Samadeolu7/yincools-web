@@ -1,13 +1,10 @@
-import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import Layout from './components/Layout';
 import Home from './pages/Home';
 import AddCar from './pages/AddCar';
 import GeneratePdf from './pages/GeneratePdf';
 import GetCars from './pages/GetCars';
 import GetCarById from './pages/GetCarById';
-import UpdateCar from './pages/UpdateCar';
-import RepairDetails from './pages/RepairDetails';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
@@ -30,15 +27,47 @@ function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Router>
-                <Navbar />
                 <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/add-car" element={<AddCar />} />
-                    <Route path="/generate-pdf" element={<GeneratePdf />} />
-                    <Route path="/get-cars" element={<GetCars />} />
-                    <Route path="/get-car/:id" element={<GetCarById />} />
-                    <Route path="/update-car/:id" element={<UpdateCar />} />
-                    <Route path="/repair-details/:id" element={<RepairDetails />} />
+                    <Route
+                        path="/"
+                        element={
+                            <Layout>
+                                <Home />
+                            </Layout>
+                        }
+                    />
+                    <Route
+                        path="/add-car"
+                        element={
+                            <Layout>
+                                <AddCar />
+                            </Layout>
+                        }
+                    />
+                    <Route
+                        path="/generate-pdf"
+                        element={
+                            <Layout>
+                                <GeneratePdf />
+                            </Layout>
+                        }
+                    />
+                    <Route
+                        path="/get-cars"
+                        element={
+                            <Layout>
+                                <GetCars />
+                            </Layout>
+                        }
+                    />
+                    <Route
+                        path="/get-car/:id"
+                        element={
+                            <Layout>
+                                <GetCarById />
+                            </Layout>
+                        }
+                    />
                 </Routes>
             </Router>
         </ThemeProvider>
