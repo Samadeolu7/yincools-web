@@ -1,23 +1,12 @@
-
-import React, { useEffect, useState } from 'react';
-import { getCars } from '../services/api';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
+import useCars from '../hooks/useCars';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Box } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 const GetCars = () => {
-    const [cars, setCars] = useState([]);
+    const { cars, loading, error } = useCars();
 
-    useEffect(() => {
-        const fetchCars = async () => {
-            try {
-                const { data } = await getCars();
-                setCars(data);
-            } catch (error) {
-                console.error('Error fetching cars:', error);
-            }
-        };
-
-        fetchCars();
-    }, []);
+    if (loading) return <Typography>Loading...</Typography>;
+    if (error) return <Typography>Error: {error}</Typography>;
 
     return (
         <div>
@@ -36,13 +25,37 @@ const GetCars = () => {
                     </TableHead>
                     <TableBody>
                         {cars.map((car) => (
-                            <TableRow key={car.id}>
-                                <TableCell>{car.driver}</TableCell>
-                                <TableCell>{car.plateNumber}</TableCell>
-                                <TableCell>{car.make}</TableCell>
-                                <TableCell>{car.model}</TableCell>
-                                <TableCell>{car.color}</TableCell>
-                                <TableCell>{car.incomingMileage}</TableCell>
+                            <TableRow key={car._id}>
+                                <TableCell component="th" scope="row">
+                                    <Box component={Link} to={`/car/${car._id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
+                                        {car.driver}
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Box component={Link} to={`/car/${car._id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
+                                        {car.plateNumber}
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Box component={Link} to={`/car/${car._id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
+                                        {car.make}
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Box component={Link} to={`/car/${car._id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
+                                        {car.model}
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Box component={Link} to={`/car/${car._id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
+                                        {car.color}
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Box component={Link} to={`/car/${car._id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
+                                        {car.incomingMileage}
+                                    </Box>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
