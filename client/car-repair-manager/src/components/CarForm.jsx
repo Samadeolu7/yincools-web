@@ -14,13 +14,27 @@ const CarForm = ({ onSubmit, initialData = {} }) => {
         complaints: initialData.complaints || '',
     });
 
+    const [errors, setErrors] = useState({});
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
+    const handleBlur = (e) => {
+        const { name, value } = e.target;
+        if (name === 'phoneNumber') {
+            const isValid = /^(?=.*0{1,2})0[7-9]0?\d[-]?\d{3}[-]?\d{4}$/.test(value);
+            setErrors({ ...errors, [name]: isValid ? '' : 'Invalid phone number format' });
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (Object.values(errors).some(error => error)) {
+            alert('Please fix the errors before submitting');
+            return;
+        }
         onSubmit(formData);
     };
 
@@ -28,7 +42,16 @@ const CarForm = ({ onSubmit, initialData = {} }) => {
         <Box component="form" onSubmit={handleSubmit} sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h6">Add/Edit Car Details</Typography>
             <TextField name="driver" label="Driver Name" value={formData.driver} onChange={handleChange} fullWidth />
-            <TextField name="plateNumber" label="Plate Number" value={formData.plateNumber} onChange={handleChange} fullWidth />
+            <TextField name="plateNumber" label="Plate Number" value={formData.plateNumber} onChange={handleChange} fullWidth /><TextField
+                name="phoneNumber"
+                label="Phone Number"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={!!errors.phoneNumber}
+                helperText={errors.phoneNumber}
+                fullWidth
+            />
             <TextField name="make" label="Make" value={formData.make} onChange={handleChange} fullWidth />
             <TextField name="model" label="Model" value={formData.model} onChange={handleChange} fullWidth />
             <TextField name="color" label="Color" value={formData.color} onChange={handleChange} fullWidth />

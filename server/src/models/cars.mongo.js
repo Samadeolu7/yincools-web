@@ -27,6 +27,17 @@ const carSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    phoneNumber: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function (v) {
+                // Regex to match the specified phone number format
+                return /^(?=.*0{1,2})0[7-9]0?\d[-]?\d{3}[-]?\d{4}$/.test(v);
+            },
+            message: props => `${props.value} is not a valid phone number!`
+        }
+    },
     plateNumber: {
         type: String,
         required: true,
