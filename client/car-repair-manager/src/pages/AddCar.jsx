@@ -5,12 +5,12 @@ import { Box, Typography } from '@mui/material';
 const AddCar = () => {
     const handleSubmit = async (data) => {
         try {
-            console.log('Car added:', data);
             await createCar(data);
             
             alert('Car added successfully!');
         } catch (error) {
             console.error('Error adding car:', error);
+            alert('Error adding car');
         }
     };
 

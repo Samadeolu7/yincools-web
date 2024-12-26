@@ -12,7 +12,6 @@ async function getAllCars() {
 // Get car by ID
 async function getCarById(id) {
     try {
-        console.log('id:', id);
         const car = await cars.findById(id).populate('repairDetails').populate('agreedRepairDetails');
 
         if (!car) {

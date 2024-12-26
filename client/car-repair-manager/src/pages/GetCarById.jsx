@@ -41,7 +41,7 @@ const GetCarById = () => {
             URL.revokeObjectURL(link.href);
             link.remove();
         } catch (error) {
-            console.error('Error generating PDF:', error);
+            alert('Error generating PDF', error);
         }
     };
     

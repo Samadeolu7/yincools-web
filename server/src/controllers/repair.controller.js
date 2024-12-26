@@ -47,8 +47,7 @@ async function handleAddAgreedRepairDetails(req, res) {
     }
 }
 async function handleGenerateEstimatePDF(req, res) {
-    console.log('Generating PDF...');
-    console.log('req.params:', req.params);
+
     const { carId } = req.params;
 
     if (!carId) {
@@ -226,7 +225,6 @@ async function handleGenerateEstimatePDF(req, res) {
         // Finalize the document
         doc.end();
     } catch (error) {
-        console.error('Error generating PDF:', error);
         res.status(500).json({ error: error.message });
     }
 }

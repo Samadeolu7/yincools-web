@@ -6,6 +6,7 @@ const CarForm = ({ onSubmit, initialData = {} }) => {
     const [formData, setFormData] = useState({
         driver: initialData.driver || '',
         plateNumber: initialData.plateNumber || '',
+        phoneNumber: initialData.phoneNumber || '',
         make: initialData.make || '',
         model: initialData.model || '',
         color: initialData.color || '',
